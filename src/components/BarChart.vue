@@ -139,6 +139,7 @@ export default {
     createChart(chartId, chartData) {
       if (chartData) {
         const ctx = document.getElementById(chartId).getContext("2d");
+        Chart.defaults.global.defaultFontSize = 18
         this.leaderBoardChart = new Chart(ctx, {
           type: chartData.type,
           data: chartData.data,
