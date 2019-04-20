@@ -100,7 +100,7 @@ export default {
             if (!meta.hidden) {
               meta.data.forEach(function(element, index) {
                 ctx.fillStyle = "rgb(0, 0, 0)";
-                var fontSize = 14;
+                var fontSize = 24;
                 var fontStyle = "normal";
                 var fontFamily = "Helvetica Neue";
                 ctx.font = Chart.helpers.fontString(
