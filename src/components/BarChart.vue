@@ -39,7 +39,8 @@ export default {
       const { data } = await offChainApi.getLeaderBoard();
       this.chartData = data.map(d => ({
         name: d.winnerParty.name,
-        amount: d.bidAmount
+        amount: d.bidAmount,
+        color: d.winnerParty.color,
       }));
       this.chairs = data.map(d => d.chair);
     },
@@ -99,7 +100,8 @@ export default {
             var meta = chart.getDatasetMeta(i);
             if (!meta.hidden) {
               meta.data.forEach(function(element, index) {
-                ctx.fillStyle = "rgb(0, 0, 0)";
+                // ctx.fillStyle = "rgb(250, 20, 250)";
+                ctx.fillStyle = self.chartData[index].color;
                 var fontSize = 24;
                 var fontStyle = "normal";
                 var fontFamily = "Helvetica Neue";
@@ -157,6 +159,7 @@ export default {
           const auction = data[i]
           console.log(i)
           this.chartData[i].name = auction.winnerParty.name
+          this.chartData[i].color = auction.winnerParty.color
           this.leaderBoardChart.data.datasets[0].data[parseInt(auction.id-1)] = parseInt(auction.bidAmount)
         }
 
