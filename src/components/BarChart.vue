@@ -150,10 +150,19 @@ export default {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     },
     subscribeAuctionChange () {
-      setInterval(() => {
-        const len = this.leaderBoardChart.data.datasets[0].data.length
-        const rand = this.getRandomInt(1, 100)
-        this.leaderBoardChart.data.datasets[0].data[rand % len]++
+      setInterval(async () => {
+        const { data } = await offChainApi.getLeaderBoard()
+        console.log('dataset', this.leaderBoardChart.data.datasets[0])
+        for(var i=0; i < data.length; i++){ 
+          const auction = data[i]
+          console.log(i)
+          this.chartData[i].name = auction.winnerParty.name
+          this.leaderBoardChart.data.datasets[0].data[parseInt(auction.id-1)] = parseInt(auction.bidAmount)
+        }
+
+        // const len = this.leaderBoardChart.data.datasets[0].data.length
+        // const rand = this.getRandomInt(1, 100)
+        // this.leaderBoardChart.data.datasets[0].data[rand % len]++
         this.leaderBoardChart.update()
       }, 1000)
     }
