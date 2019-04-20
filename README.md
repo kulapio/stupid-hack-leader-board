@@ -1,5 +1,7 @@
 # stupid-hack-leader-board
 
+<img src="https://i.imgur.com/QNNTI7c.jpeg">
+
 ## Project setup
 ```
 npm install
