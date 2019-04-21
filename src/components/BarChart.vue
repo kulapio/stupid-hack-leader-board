@@ -1,7 +1,21 @@
 <template>
   <div>
     <vue-element-loading :active="loading" spinner="bar-fade-scale" is-full-screen color="rgba(255, 99, 132, 0.2)"/>
-    <canvas id="leader-board-chart"></canvas>
+    <div v-if="isAuctionStart">
+      <canvas id="leader-board-chart"></canvas>
+      <br>
+      <div class="button-stop" @click="stopAuction()">
+        ปิดการประมูล
+      </div>
+    </div>
+    <div class="center-screen" v-else>
+      <div>
+        ยังไม่เปิดการประมูล
+      </div>
+      <div class="button-start" @click="startAuction()">
+        เปิดการประมูล
+      </div>
+    </div>
   </div>
 </template>
 
@@ -21,28 +35,38 @@ export default {
       parties: [],
       chairs: [],
       leaderBoardData: null,
-      loading: false
+      loading: false,
+      isAuctionStart: false
     };
   },
   async mounted() {
-    this.loading = true;
-    await this.fetchLeaderBoard();
-    await this.fetchParties();
-    this.initChartInstance();
-    this.initialLabels();
-    this.createChart("leader-board-chart", this.leaderBoardData);
-    this.subscribeAuctionChange();
-    this.loading = false;
+    this.generateChart()
   },
   methods: {
+    async generateChart () {
+      this.loading = true;
+      const { data } = await offChainApi.getIsAuctionStart()
+      this.isAuctionStart = data
+      if (data) {
+        await this.fetchLeaderBoard();
+        await this.fetchParties();
+        this.initChartInstance();
+        this.initialLabels();
+        this.createChart("leader-board-chart", this.leaderBoardData);
+        this.subscribeAuctionChange();
+      }
+      this.loading = false;
+    },
     async fetchLeaderBoard() {
       const { data } = await offChainApi.getLeaderBoard();
-      this.chartData = data.map(d => ({
-        name: d.winnerParty.name,
-        amount: d.bidAmount,
-        color: d.winnerParty.color,
-      }));
-      this.chairs = data.map(d => d.chair);
+      if (data.length) {
+        this.chartData = data.map(d => ({
+          name: d.winnerParty.name,
+          amount: d.bidAmount,
+          color: d.winnerParty.color,
+        }));
+        this.chairs = data.map(d => d.chair);
+      }
     },
     async fetchParties() {
       const { data } = await offChainApi.getParties();
@@ -102,7 +126,7 @@ export default {
               meta.data.forEach(function(element, index) {
                 // ctx.fillStyle = "rgb(250, 20, 250)";
                 ctx.fillStyle = self.chartData[index].color;
-                var fontSize = 24;
+                var fontSize = 21;
                 var fontStyle = "normal";
                 var fontFamily = "Helvetica Neue";
                 ctx.font = Chart.helpers.fontString(
@@ -124,7 +148,7 @@ export default {
 
                   if (self.currentState === self.showTeamNameOnState) {
                     ctx.font = Chart.helpers.fontString(
-                      14,
+                      21,
                       fontStyle,
                       fontFamily
                     );
@@ -147,30 +171,59 @@ export default {
         });
       }
     },
-    getRandomInt(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    },
     subscribeAuctionChange () {
       setInterval(async () => {
         const { data } = await offChainApi.getLeaderBoard()
-        console.log('dataset', this.leaderBoardChart.data.datasets[0])
-        for(var i=0; i < data.length; i++){ 
-          const auction = data[i]
-          console.log(i)
+        data.forEach((d, i) => {
+          const auction = d
           this.chartData[i].name = auction.winnerParty.name
           this.chartData[i].color = auction.winnerParty.color
           this.leaderBoardChart.data.datasets[0].data[parseInt(auction.id-1)] = parseInt(auction.bidAmount)
-        }
-
-        // const len = this.leaderBoardChart.data.datasets[0].data.length
-        // const rand = this.getRandomInt(1, 100)
-        // this.leaderBoardChart.data.datasets[0].data[rand % len]++
+        })
+        // this.leaderBoardChart.scales['y-axis-0'].max = Math.max(...this.leaderBoardChart.data.datasets[0].data) + 3
+        // console.log(Math.max(...this.leaderBoardChart.data.datasets[0].data))
+        // console.log(this.leaderBoardChart.scales['y-axis-0'].max)
         this.leaderBoardChart.update()
       }, 1000)
+    },
+    async startAuction () {
+      await offChainApi.postStartAuction()
+      this.generateChart()
+    },
+    async stopAuction () {
+      await offChainApi.postStopAuction()
     }
   }
 };
 </script>
+
+<style scoped>
+.center-screen {
+  position:fixed;
+  top: 50%;
+  left: 50%;
+  width:30em;
+  height:18em;
+  margin-top: -9em; /*set to a negative number 1/2 of your height*/
+  margin-left: -15em; /*set to a negative number 1/2 of your width*/
+}
+.button-start {
+  padding: 10px;
+  border-radius: 3px;
+  background-color: #2ecc71;
+  width: fit-content;
+  color: #fff;
+  margin: 10px auto;
+  cursor: pointer;
+}
+.button-stop {
+  padding: 10px;
+  border-radius: 3px;
+  background-color: #e74c3c;
+  width: fit-content;
+  color: #fff;
+  margin: 10px auto;
+  cursor: pointer;
+}
+</style>
 
