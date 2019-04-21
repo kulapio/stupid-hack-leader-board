@@ -2,7 +2,8 @@ import axios from "axios";
 
 const api = axios.create({
   // baseURL: "http://172.20.10.3:3000/api/v1"
-  baseURL: "http://127.0.0.1:3000/api/v1"
+  // baseURL: "http://127.0.0.1:3000/api/v1"
+  baseURL: "http://stupidhack.kulap.io:3000/api/v1"
 });
 
 export default {
