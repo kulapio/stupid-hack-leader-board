@@ -106,7 +106,8 @@ export default {
             yAxes: [
               {
                 ticks: {
-                  beginAtZero: true
+                  beginAtZero: true,
+                  stepSize: 5
                 }
               }
             ]
